@@ -17,6 +17,5 @@ func InitRoutes(app *fiber.App, log *slog.Logger, externalApi string) {
 
 	api.Post("/songs", h.CreateSong)
 	api.Put("/song/:id", h.UpdateSong)
-	api.Patch("/song/:id", h.PartialUpdateSong)
 	api.Delete("/song/:id", h.DeleteSong)
 }

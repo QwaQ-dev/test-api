@@ -2,7 +2,7 @@ package structure
 
 type Song struct {
 	Id    int    `json:"id"`
-	Name  string `json:"name"`
+	Song  string `json:"song"`
 	Group string `json:"group"`
 	SongDetails
 }

@@ -1,6 +1,6 @@
 CREATE TABLE Song (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    song VARCHAR(255) NOT NULL,
     "group" VARCHAR(255) NOT NULL
 );
 
