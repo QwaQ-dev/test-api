@@ -1,0 +1,2 @@
+DROP TABLE Song;
+DROP TABLE SongDetail;

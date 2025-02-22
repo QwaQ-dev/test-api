@@ -1,0 +1,11 @@
+env: 'dev'
+external_api: "example.com"
+http_server:
+  port: ":8080"
+database:
+  db_port: "5455"
+  db_host: "localhost"
+  db_name: "postgres"
+  db_username: "postgres"
+  db_password: "qwe"
+  ssl_mode: "disable"
