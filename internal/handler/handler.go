@@ -140,7 +140,7 @@ func (h *Handler) SongText(c *fiber.Ctx) error {
 		end = len(lines)
 	}
 
-	return c.Status(500).JSON(fiber.Map{
+	return c.Status(200).JSON(fiber.Map{
 		"page":  page,
 		"limit": limit,
 		"text":  lines[offset:end],
@@ -156,11 +156,22 @@ func (h *Handler) SongById(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Song not found"})
 	}
-	return c.JSON(fiber.Map{"Song": song})
+	return c.Status(200).JSON(fiber.Map{"Song": song})
 }
 
 func (h *Handler) UpdateSongInfo(c *fiber.Ctx) error {
-	return c.SendString("Song updated")
+	id := c.Params("id")
+
+	song := new(structure.Song)
+	if err := c.BodyParser(song); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Falied to parse body"})
+	}
+
+	_, err := repository.DB.Exec(`UPDATE song SET song = $1, "group" = $2 WHERE id = $3`, song.Song, song.Text, id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Error updating song"})
+	}
+	return c.Status(200).JSON(fiber.Map{"message": "Song updated successfully"})
 }
 
 func (h *Handler) DeleteSong(c *fiber.Ctx) error {
