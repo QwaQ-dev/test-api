@@ -7,7 +7,7 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
-	"github.com/qwaq-dev/test-api/internal/config"
+	"github.com/qwaq-dev/test-api/cmd/internal/config"
 	"github.com/qwaq-dev/test-api/pkg/logger/sl"
 )
 

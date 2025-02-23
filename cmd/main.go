@@ -1,3 +1,11 @@
+// @title			Songs API
+// @version		1.0
+// @description	Онлайн библиотека песен
+// @contact.name QwaQ
+// @contact.email qwaq.dev@gmail.com
+// @host			localhost:8080
+// @BasePath		/api
+
 package main
 
 import (
@@ -5,9 +13,11 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/qwaq-dev/test-api/internal/config"
-	"github.com/qwaq-dev/test-api/internal/repository"
-	"github.com/qwaq-dev/test-api/internal/route"
+	"github.com/gofiber/swagger"
+	_ "github.com/qwaq-dev/test-api/cmd/docs"
+	"github.com/qwaq-dev/test-api/cmd/internal/config"
+	"github.com/qwaq-dev/test-api/cmd/internal/handler"
+	"github.com/qwaq-dev/test-api/cmd/internal/repository"
 )
 
 const (
@@ -26,7 +36,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	route.InitRoutes(app, log, cfg.ExternalAPI)
+	api := app.Group("/api")
+	h := handler.NewHandler(log, cfg.ExternalAPI)
+
+	api.Get("/songs", h.AllSongs)         //+
+	api.Get("/song/:id", h.SongById)      //+
+	api.Get("/song/:id/text", h.SongText) //+
+
+	api.Post("/songs", h.CreateSong)       //+
+	api.Put("/song/:id", h.UpdateSongInfo) //+
+	api.Delete("/song/:id", h.DeleteSong)  //+
+
+	app.Get("/swagger/*", swagger.HandlerDefault) // default
 
 	log.Info("Server started", slog.String("port", cfg.HTTPServer.Port))
 	app.Listen(cfg.HTTPServer.Port)
