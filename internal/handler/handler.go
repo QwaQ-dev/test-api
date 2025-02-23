@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/qwaq-dev/test-api/internal/repository"
@@ -116,7 +117,34 @@ func (h *Handler) AllSongs(c *fiber.Ctx) error {
 }
 
 func (h *Handler) SongText(c *fiber.Ctx) error {
-	return c.SendString("Song text by ID")
+	id := c.Params("id")
+	var text string
+
+	err := repository.DB.QueryRow("SELECT text FROM SongDetail WHERE song_id = $1", id).Scan(&text)
+	if err != nil {
+
+	}
+
+	lines := strings.Split(text, "\n")
+
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	limit, _ := strconv.Atoi(c.Query("limit", "2"))
+	offset := (page - 1) * limit
+
+	if offset >= len(lines) {
+		return c.Status(400).JSON(fiber.Map{"error": "Page out of range"})
+	}
+
+	end := offset + limit
+	if end > len(lines) {
+		end = len(lines)
+	}
+
+	return c.Status(500).JSON(fiber.Map{
+		"page":  page,
+		"limit": limit,
+		"text":  lines[offset:end],
+	})
 }
 
 func (h *Handler) SongById(c *fiber.Ctx) error {
@@ -131,7 +159,7 @@ func (h *Handler) SongById(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"Song": song})
 }
 
-func (h *Handler) UpdateSong(c *fiber.Ctx) error {
+func (h *Handler) UpdateSongInfo(c *fiber.Ctx) error {
 	return c.SendString("Song updated")
 }
 

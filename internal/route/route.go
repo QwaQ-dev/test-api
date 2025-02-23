@@ -16,6 +16,6 @@ func InitRoutes(app *fiber.App, log *slog.Logger, externalApi string) {
 	api.Get("/song/:id/text", h.SongText)
 
 	api.Post("/songs", h.CreateSong)
-	api.Put("/song/:id", h.UpdateSong)
+	api.Put("/song/:id", h.UpdateSongInfo)
 	api.Delete("/song/:id", h.DeleteSong)
 }
