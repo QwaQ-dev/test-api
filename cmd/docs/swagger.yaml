@@ -13,7 +13,7 @@ definitions:
       song:
         type: string
       song_id:
-        type: string
+        type: integer
       text:
         type: string
     type: object
@@ -30,64 +30,167 @@ paths:
     delete:
       consumes:
       - application/json
+      description: Удаляет песню из базы данных по её уникальному идентификатору.
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Песня успешно удалена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Песня не найдена
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Internal Server Error
+          description: Ошибка сервера
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Удаление песни по id
+      summary: Удаление песни по ID
       tags:
       - Songs
     get:
       consumes:
       - application/json
+      description: Возвращает информацию о песне по её ID, включая название и группу.
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Данные о песне
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/structure.Song'
         "400":
-          description: Bad Request
+          description: Некорректный запрос (например, ID не является числом)
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Получение песни по id
-      tags:
-      - Songs
-    put:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
+        "404":
+          description: Песня не найдена
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Internal Server Error
+          description: Ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получение информации о песне
+      tags:
+      - Songs
+    patch:
+      consumes:
+      - application/json
+      description: Позволяет обновить одно или несколько полей песни по её ID
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные для обновления (только изменяемые поля)
+        in: body
+        name: data
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Песня успешно обновлена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный запрос
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Песня не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Частичное обновление песни
+      tags:
+      - Songs
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о песне по её ID, включая название и группу.
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Объект с обновлёнными данными
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/structure.Song'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Песня успешно обновлена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Некорректный запрос или ошибка валидации
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Песня не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
           schema:
             additionalProperties:
               type: string
@@ -99,15 +202,21 @@ paths:
     get:
       consumes:
       - application/json
-      description: Можно фильтровать указать page и limit для текста
+      description: Возвращает текст песни по ID с возможностью указать номер страницы
+        и количество строк на странице.
       parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: integer
       - default: 1
         description: Номер страницы
         in: query
         name: page
         type: integer
       - default: 2
-        description: Количество срок песни на странице
+        description: Количество строк текста на странице
         in: query
         name: limit
         type: integer
@@ -115,36 +224,43 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Текст песни с пагинацией
           schema:
             additionalProperties: true
             type: object
         "400":
-          description: Bad Request
+          description: Некорректный запрос
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Песня или текст не найдены
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Internal Server Error
+          description: Ошибка сервера
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Получение текста с пагинацией
+      summary: Получение текста песни с пагинацией
       tags:
       - Songs
   /api/songs:
     get:
       consumes:
       - application/json
-      description: Можно фильтровать по названию и группе
+      description: Возвращает список песен с возможностью фильтрации по названию и
+        группе, а также с пагинацией.
       parameters:
-      - description: Название песни
+      - description: Фильтр по названию песни (поиск по подстроке)
         in: query
         name: song
         type: string
-      - description: Название группы
+      - description: Фильтр по названию группы (поиск по подстроке)
         in: query
         name: group
         type: string
@@ -162,12 +278,18 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Список песен
           schema:
             additionalProperties: true
             type: object
+        "400":
+          description: Некорректный запрос
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
-          description: Internal Server Error
+          description: Ошибка сервера
           schema:
             additionalProperties:
               type: string
@@ -178,9 +300,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Позволяет добавить песню с указанием названия и группы
+      description: Позволяет добавить песню с указанием названия и группы.
       parameters:
-      - description: Данные песни
+      - description: Данные песни (название и группа)
         in: body
         name: song
         required: true
@@ -189,19 +311,19 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Песня успешно добавлена
           schema:
             additionalProperties: true
             type: object
         "400":
-          description: Bad Request
+          description: Некорректные данные
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: Internal Server Error
+          description: Ошибка сервера
           schema:
             additionalProperties:
               type: string

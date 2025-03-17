@@ -4,31 +4,33 @@ import (
 	"fmt"
 	"log/slog"
 
-	"database/sql"
-
-	_ "github.com/lib/pq"
 	"github.com/qwaq-dev/test-api/cmd/internal/config"
+	"github.com/qwaq-dev/test-api/cmd/internal/structure"
 	"github.com/qwaq-dev/test-api/pkg/logger/sl"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
 func NewPostgresDB(cfg config.Database, log *slog.Logger) error {
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.Name, cfg.Password, cfg.SSLMode))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+		cfg.Host, cfg.Username, cfg.Password, cfg.Name, cfg.Port, cfg.SSLMode)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Error("No database with this settings", sl.Err(err))
 		return err
 	}
 
-	err = db.Ping()
+	DB = db
 
+	err = DB.AutoMigrate(&structure.Song{}, &structure.SongDetails{})
 	if err != nil {
-		log.Error("Can't connect to database", sl.Err(err))
+		log.Error("Migration failed", sl.Err(err))
 		return err
 	}
 
-	DB = db
 	log.Info("Success connect to database")
 	return nil
 }

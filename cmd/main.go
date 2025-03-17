@@ -45,7 +45,8 @@ func main() {
 
 	api.Post("/songs", h.CreateSong)       //+
 	api.Put("/song/:id", h.UpdateSongInfo) //+
-	api.Delete("/song/:id", h.DeleteSong)  //+
+	api.Patch("/song/:id", h.PartialUpdateSong)
+	api.Delete("/song/:id", h.DeleteSong) //+
 
 	app.Get("/swagger/*", swagger.HandlerDefault) // default
 

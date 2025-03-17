@@ -20,6 +20,7 @@ const docTemplate = `{
     "paths": {
         "/api/song/{id}": {
             "get": {
+                "description": "Возвращает информацию о песне по её ID, включая название и группу.",
                 "consumes": [
                     "application/json"
                 ],
@@ -29,17 +30,43 @@ const docTemplate = `{
                 "tags": [
                     "Songs"
                 ],
-                "summary": "Получение песни по id",
+                "summary": "Получение информации о песне",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID песни",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Данные о песне",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/structure.Song"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Некорректный запрос (например, ID не является числом)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Песня не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -50,6 +77,7 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "description": "Обновляет информацию о песне по её ID, включая название и группу.",
                 "consumes": [
                     "application/json"
                 ],
@@ -60,9 +88,27 @@ const docTemplate = `{
                     "Songs"
                 ],
                 "summary": "Обновление данных о песне",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID песни",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Объект с обновлёнными данными",
+                        "name": "song",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structure.Song"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Песня успешно обновлена",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -71,7 +117,16 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Некорректный запрос или ошибка валидации",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Песня не найдена",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -80,7 +135,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -91,6 +146,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "description": "Удаляет песню из базы данных по её уникальному идентификатору.",
                 "consumes": [
                     "application/json"
                 ],
@@ -100,10 +156,37 @@ const docTemplate = `{
                 "tags": [
                     "Songs"
                 ],
-                "summary": "Удаление песни по id",
+                "summary": "Удаление песни по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID песни",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Песня успешно удалена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный ID",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Песня не найдена",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -112,7 +195,77 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Позволяет обновить одно или несколько полей песни по её ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Songs"
+                ],
+                "summary": "Частичное обновление песни",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID песни",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные для обновления (только изменяемые поля)",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Песня успешно обновлена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный запрос",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Песня не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -125,7 +278,7 @@ const docTemplate = `{
         },
         "/api/song/{id}/text": {
             "get": {
-                "description": "Можно фильтровать указать page и limit для текста",
+                "description": "Возвращает текст песни по ID с возможностью указать номер страницы и количество строк на странице.",
                 "consumes": [
                     "application/json"
                 ],
@@ -135,8 +288,15 @@ const docTemplate = `{
                 "tags": [
                     "Songs"
                 ],
-                "summary": "Получение текста с пагинацией",
+                "summary": "Получение текста песни с пагинацией",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID песни",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -147,21 +307,30 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 2,
-                        "description": "Количество срок песни на странице",
+                        "description": "Количество строк текста на странице",
                         "name": "limit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Текст песни с пагинацией",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Некорректный запрос",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Песня или текст не найдены",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -170,7 +339,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка сервера",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -183,7 +352,7 @@ const docTemplate = `{
         },
         "/api/songs": {
             "get": {
-                "description": "Можно фильтровать по названию и группе",
+                "description": "Возвращает список песен с возможностью фильтрации по названию и группе, а также с пагинацией.",
                 "consumes": [
                     "application/json"
                 ],
@@ -197,13 +366,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Название песни",
+                        "description": "Фильтр по названию песни (поиск по подстроке)",
                         "name": "song",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Название группы",
+                        "description": "Фильтр по названию группы (поиск по подстроке)",
                         "name": "group",
                         "in": "query"
                     },
@@ -224,14 +393,23 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Список песен",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
+                    "400": {
+                        "description": "Некорректный запрос",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка сервера",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -242,7 +420,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Позволяет добавить песню с указанием названия и группы",
+                "description": "Позволяет добавить песню с указанием названия и группы.",
                 "consumes": [
                     "application/json"
                 ],
@@ -255,7 +433,7 @@ const docTemplate = `{
                 "summary": "Добавление новой песни",
                 "parameters": [
                     {
-                        "description": "Данные песни",
+                        "description": "Данные песни (название и группа)",
                         "name": "song",
                         "in": "body",
                         "required": true,
@@ -265,15 +443,15 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Песня успешно добавлена",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Некорректные данные",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -282,7 +460,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Ошибка сервера",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -314,7 +492,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "song_id": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "text": {
                     "type": "string"
